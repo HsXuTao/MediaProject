@@ -5,7 +5,7 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "com.tao_xu.mediaprojection"
+        applicationId "com.taoxu.mediaprojection"
         minSdkVersion 21
         targetSdkVersion 22
     }
