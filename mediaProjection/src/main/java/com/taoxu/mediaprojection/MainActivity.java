@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.projection.MediaProjectionManager;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -79,21 +78,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         return false;
     }
 
-    private void getAppDetailSettingIntent(Context context) {
-        Intent localIntent = new Intent();
-        localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (Build.VERSION.SDK_INT >= 9) {
-            localIntent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
-            localIntent.setData(Uri.fromParts("package", getPackageName(), null));
-        } else if (Build.VERSION.SDK_INT <= 8) {
-            localIntent.setAction(Intent.ACTION_VIEW);
-            localIntent.setClassName("com.android.settings", "com.android.settings.InstalledAppDetails");
-            localIntent.putExtra("com.android.settings.ApplicationPkgName", getPackageName());
-        }
-        startActivity(localIntent);
-    }
-
-
     private void initData() {
         // TODO Auto-generated method stub
         mMediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
@@ -118,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    getAppDetailSettingIntent(MainActivity.this);
+                                    Utils.getAppDetailSettingIntent(MainActivity.this);
                                 }
                             }).setNegativeButton("取消", null).create();
                     dialog.show();

@@ -1,6 +1,9 @@
 package com.taoxu.mediaprojection;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.widget.Toast;
 
@@ -44,6 +47,33 @@ public class Utils {
         return path;
     }
 
+    /**
+     * 删除单个文件
+     * @param   filePath    被删除文件的文件名
+     * @return 文件删除成功返回true，否则返回false
+     */
+    public static boolean deleteFile(String filePath) {
+        File file = new File(filePath);
+        if (file.isFile() && file.exists()) {
+            return file.delete();
+        }
+        return false;
+    }
+    /**
+     * 删除单个文件
+     * @param   filePath    被删除文件的文件名
+     * @return 文件删除成功返回true，否则返回false
+     */
+    public static boolean isExistsFile(String filePath) {
+        File file = new File(filePath);
+        if (file.isFile() && file.exists()) {
+            return true;
+        }
+        return false;
+    }
+
+
+
     public static void checkRecordFolderFile() {
         File rootFolder = new File(ROOT_FOLDER_PATH);
         if (!rootFolder.exists()) {
@@ -78,7 +108,9 @@ public class Utils {
     private static Runnable r = new Runnable() {
         public void run() {
             mToast.cancel();
-        };
+        }
+
+        ;
     };
 
     public static void showToast(Context context, String text) {
@@ -90,5 +122,20 @@ public class Utils {
         }
         mhandler.postDelayed(r, 5000);
         mToast.show();
+    }
+
+
+    public static void getAppDetailSettingIntent(Context context) {
+        Intent localIntent = new Intent();
+        localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (Build.VERSION.SDK_INT >= 9) {
+            localIntent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
+            localIntent.setData(Uri.fromParts("package", context.getPackageName(), null));
+        } else if (Build.VERSION.SDK_INT <= 8) {
+            localIntent.setAction(Intent.ACTION_VIEW);
+            localIntent.setClassName("com.android.settings", "com.android.settings.InstalledAppDetails");
+            localIntent.putExtra("com.android.settings.ApplicationPkgName", context.getPackageName());
+        }
+        context.startActivity(localIntent);
     }
 }

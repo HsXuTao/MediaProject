@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
@@ -266,43 +265,48 @@ public class ScreenService extends Service implements OnClickListener,
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void startCapture(String path) {
-        Image image = mImageReader.acquireLatestImage();
-        int width = image.getWidth();
-        int height = image.getHeight();
-        final Image.Plane[] planes = image.getPlanes();
-        final ByteBuffer buffer = planes[0].getBuffer();
-        int pixelStride = planes[0].getPixelStride();
-        int rowStride = planes[0].getRowStride();
-        int rowPadding = rowStride - pixelStride * width;
-        int padding = rowPadding / pixelStride;
-        Bitmap bitmap = Bitmap.createBitmap(width + padding, height,
-                Bitmap.Config.ARGB_8888);
-        bitmap.copyPixelsFromBuffer(buffer);
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height);
-        image.close();
+        try {
+            Image image = mImageReader.acquireLatestImage();
+            int width = image.getWidth();
+            int height = image.getHeight();
+            final Image.Plane[] planes = image.getPlanes();
+            final ByteBuffer buffer = planes[0].getBuffer();
+            int pixelStride = planes[0].getPixelStride();
+            int rowStride = planes[0].getRowStride();
+            int rowPadding = rowStride - pixelStride * width;
+            int padding = rowPadding / pixelStride;
+            Bitmap bitmap = Bitmap.createBitmap(width + padding, height,
+                    Bitmap.Config.ARGB_8888);
+            bitmap.copyPixelsFromBuffer(buffer);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height);
+            image.close();
 
-        if (bitmap != null) {
-            try {
-                File fileImage = new File(path);
-                if (!fileImage.exists()) {
-                    fileImage.createNewFile();
+            if (bitmap != null) {
+                try {
+                    File fileImage = new File(path);
+                    if (!fileImage.exists()) {
+                        fileImage.createNewFile();
+                    }
+                    FileOutputStream out = new FileOutputStream(fileImage);
+                    if (out != null) {
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                        out.flush();
+                        out.close();
+                        Intent media = new Intent(
+                                Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                        Uri contentUri = Uri.fromFile(fileImage);
+                        media.setData(contentUri);
+                        this.sendBroadcast(media);
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                FileOutputStream out = new FileOutputStream(fileImage);
-                if (out != null) {
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                    out.flush();
-                    out.close();
-                    Intent media = new Intent(
-                            Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                    Uri contentUri = Uri.fromFile(fileImage);
-                    media.setData(contentUri);
-                    this.sendBroadcast(media);
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        }catch (Exception ex){
+            ex.printStackTrace();
+            Utils.deleteFile(screenshotPath);
         }
     }
 
@@ -330,14 +334,8 @@ public class ScreenService extends Service implements OnClickListener,
                         mMediaRecorder.getSurface(), null /* Callbacks */, null /* Handler */);
     }
 
-    private void prepareRecorder() {
-        try {
-            mMediaRecorder.prepare();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void prepareRecorder() throws IOException {
+        mMediaRecorder.prepare();
     }
 
     private void stopRecorder() {
@@ -349,6 +347,8 @@ public class ScreenService extends Service implements OnClickListener,
         String path = Utils.VIDEO_FOLDER_PATH + name + ".mp4";
         if (mMediaRecorder == null) {
             mMediaRecorder = new MediaRecorder();
+        } else {
+            mMediaRecorder.reset();
         }
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
@@ -365,7 +365,7 @@ public class ScreenService extends Service implements OnClickListener,
 
     private void initImageReader() {
 
-        mImageReader = ImageReader.newInstance(mDisplayWidth, mDisplayHeight, ImageFormat.RGB_565, 2); // ImageFormat.RGB_565
+        mImageReader = ImageReader.newInstance(mDisplayWidth, mDisplayHeight, 0x1, 2); // ImageFormat.RGB_565
     }
 
     private void stopMediaProjection() {
@@ -478,6 +478,8 @@ public class ScreenService extends Service implements OnClickListener,
 
     }
 
+    public String screenshotPath;
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -501,7 +503,7 @@ public class ScreenService extends Service implements OnClickListener,
                     handler1.postDelayed(new Runnable() {
                         public void run() {
                             // capture the screen
-                            String screenshotPath = Utils.getScreenshotPath();
+                            screenshotPath = Utils.getScreenshotPath();
                             startCapture(screenshotPath);
                         }
                     }, 500);
@@ -510,18 +512,23 @@ public class ScreenService extends Service implements OnClickListener,
                         public void run() {
                             stopVirtual();
                             normalButton();
-                            mSoundPool.play(1, mCurrent, mCurrent, 1, 0, 1f);
-                            Utils.showToast(ScreenService.this, "截屏成功");
+                            if(Utils.isExistsFile(screenshotPath)) {
+                                mSoundPool.play(1, mCurrent, mCurrent, 1, 0, 1f);
+                                Utils.showToast(ScreenService.this, "截屏成功");
+                            }else{
+                                Utils.showToast(getApplicationContext(),"截屏失败，您可能没有截屏权限");
+                            }
                         }
-                    }, 500);
-
+                    }, 1000);
                 }
                 break;
+
             case R.id.start_record:
                 hideAllButton();
                 final EditText editText = new EditText(this);
                 editText.setBackgroundColor(Color.TRANSPARENT);
                 editText.setTextColor(Color.BLACK);
+                editText.setMaxLines(1);
                 // 防止某些特殊机型会在选择输入内容的时候发生FC
                 editText.setCustomSelectionActionModeCallback(new Callback() {
                     @Override
@@ -545,8 +552,7 @@ public class ScreenService extends Service implements OnClickListener,
                         return false;
                     }
                 });
-                mAlertDialog = new AlertDialog.Builder(new ContextThemeWrapper(
-                        this, R.style.AppTheme))
+                mAlertDialog = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme))
                         .setTitle("请输入视屏名字")
                         .setView(editText)
                         .setNegativeButton("确定",
@@ -593,19 +599,50 @@ public class ScreenService extends Service implements OnClickListener,
                                         } else {
                                             Utils.checkRecordFolderFile();
                                             initRecorder(name);
-                                            prepareRecorder();
-                                            shareScreen();
-                                            Utils.showToast(ScreenService.this,
-                                                    "录屏开始");
-                                            ((MediaProjectionApplication) getApplication())
-                                                    .setInRecord(true);
-                                            inRecordButton();
                                             try {
-                                                field.set(dialog, true);
-                                            } catch (Exception e) {
+                                                prepareRecorder();
+                                                shareScreen();
+                                                Utils.showToast(ScreenService.this,
+                                                        "录屏开始");
+                                                ((MediaProjectionApplication) getApplication())
+                                                        .setInRecord(true);
+                                                inRecordButton();
+                                                try {
+                                                    field.set(dialog, true);
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                                dialog.dismiss();
+                                            } catch (IOException e) {
                                                 e.printStackTrace();
+
+                                                Utils.deleteFile(Utils.VIDEO_FOLDER_PATH + name + ".mp4");
+                                                AlertDialog dialog2 = new AlertDialog.Builder(new ContextThemeWrapper(ScreenService.this, R.style.AppTheme)).setTitle("提示").setMessage("应用可能未获得录像权限，点击确定进入设置页面")
+                                                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+
+                                                                Field field = null;
+                                                                try {
+                                                                    // 利用反射,来控制dialog若是不符合条件时候不被关闭
+                                                                    field = mAlertDialog.getClass()
+                                                                            .getSuperclass()
+                                                                            .getDeclaredField("mShowing");
+                                                                    field.setAccessible(true);
+                                                                    field.set(mAlertDialog, true);
+                                                                    normalButton();
+                                                                    // field.set(dialog, false);
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                }
+                                                                mAlertDialog.dismiss();
+                                                                Utils.getAppDetailSettingIntent(ScreenService.this);
+                                                            }
+                                                        }).setNegativeButton("取消", null).create();
+                                                dialog2.getWindow().setType(
+                                                        WindowManager.LayoutParams.TYPE_PHONE);
+                                                dialog2.show();
                                             }
-                                            dialog.dismiss();
                                         }
                                     }
                                 })
@@ -645,6 +682,7 @@ public class ScreenService extends Service implements OnClickListener,
             default:
                 break;
         }
+
     }
 
     @Override
