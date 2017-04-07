@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.widget.Toast;
 
@@ -15,7 +16,7 @@ import java.util.Date;
  * Created by tao.xu on 2016/01/28.
  */
 public class Utils {
-    public final static String ROOT_FOLDER_PATH = "/sdcard/MediaProjection/";
+    public final static String ROOT_FOLDER_PATH = Environment.getExternalStorageDirectory().getPath()+"/MediaProjection/";
     public final static String PICTURE_FOLDER_PATH = ROOT_FOLDER_PATH
             + "Picture/";
     public final static String VIDEO_FOLDER_PATH = ROOT_FOLDER_PATH + "Video/";
