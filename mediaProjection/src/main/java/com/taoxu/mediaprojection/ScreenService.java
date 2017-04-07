@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
@@ -55,6 +56,9 @@ import java.nio.ByteBuffer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Created by tao.xu on 2016/01/28.
+ */
 public class ScreenService extends Service implements OnClickListener,
         OnLongClickListener {
 
@@ -285,7 +289,7 @@ public class ScreenService extends Service implements OnClickListener,
                 }
                 FileOutputStream out = new FileOutputStream(fileImage);
                 if (out != null) {
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
                     out.flush();
                     out.close();
                     Intent media = new Intent(
@@ -360,8 +364,8 @@ public class ScreenService extends Service implements OnClickListener,
     }
 
     private void initImageReader() {
-        mImageReader = ImageReader.newInstance(mDisplayWidth, mDisplayHeight,
-                0x1, 2); // ImageFormat.RGB_565
+
+        mImageReader = ImageReader.newInstance(mDisplayWidth, mDisplayHeight, ImageFormat.RGB_565, 2); // ImageFormat.RGB_565
     }
 
     private void stopMediaProjection() {
@@ -376,58 +380,58 @@ public class ScreenService extends Service implements OnClickListener,
         @Override
         public boolean onTouch(View view, MotionEvent event) {
             switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                inOneTouch = false;
-                x = event.getRawX();
-                y = event.getRawY();
-                mCurrentTime = System.currentTimeMillis();
-
-                break;
-            case MotionEvent.ACTION_MOVE:
-
-                if (Math.abs(event.getRawX() - x) > mTouchSlop
-                        || Math.abs(event.getRawY() - y) > mTouchSlop) {
-                    mSideFloatLayoutParams.x = (int) event.getRawX()
-                            - mScreenshot.getMeasuredWidth() / 2;
-                    mSideFloatLayoutParams.y = (int) event.getRawY()
-                            - mScreenshot.getMeasuredHeight() / 2 - 25;
-                    mSideWindowManager.updateViewLayout(mSideFloatLayout,
-                            mSideFloatLayoutParams);
+                case MotionEvent.ACTION_DOWN:
+                    inOneTouch = false;
+                    x = event.getRawX();
+                    y = event.getRawY();
                     mCurrentTime = System.currentTimeMillis();
-                    inOneTouch = true;
-                    return true;
-                }
-                // 设置长按事件
-                else if (System.currentTimeMillis() - mCurrentTime > 1000
-                        && Math.abs(event.getRawX() - x) < mTouchSlop
-                        && Math.abs(event.getRawY() - y) < mTouchSlop) {
-                    switch (view.getId()) {
-                    case R.id.start:
-                    case R.id.stop:
-                        Intent intent = new Intent();
-                        intent.setClass(ScreenService.this, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+
+                    break;
+                case MotionEvent.ACTION_MOVE:
+
+                    if (Math.abs(event.getRawX() - x) > mTouchSlop
+                            || Math.abs(event.getRawY() - y) > mTouchSlop) {
+                        mSideFloatLayoutParams.x = (int) event.getRawX()
+                                - mScreenshot.getMeasuredWidth() / 2;
+                        mSideFloatLayoutParams.y = (int) event.getRawY()
+                                - mScreenshot.getMeasuredHeight() / 2 - 25;
+                        mSideWindowManager.updateViewLayout(mSideFloatLayout,
+                                mSideFloatLayoutParams);
+                        mCurrentTime = System.currentTimeMillis();
                         inOneTouch = true;
                         return true;
-
-                    default:
-                        break;
                     }
-                }
+                    // 设置长按事件
+                    else if (System.currentTimeMillis() - mCurrentTime > 1000
+                            && Math.abs(event.getRawX() - x) < mTouchSlop
+                            && Math.abs(event.getRawY() - y) < mTouchSlop) {
+                        switch (view.getId()) {
+                            case R.id.start:
+                            case R.id.stop:
+                                Intent intent = new Intent();
+                                intent.setClass(ScreenService.this, MainActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                inOneTouch = true;
+                                return true;
 
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                if (inOneTouch) {
-                    settingFloatWindowPosition();
-                    return true;
-                }
+                            default:
+                                break;
+                        }
+                    }
 
-                break;
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (inOneTouch) {
+                        settingFloatWindowPosition();
+                        return true;
+                    }
 
-            default:
-                break;
+                    break;
+
+                default:
+                    break;
             }
             return false; // 设置为false是保证OnClickListener能够被正常触发
         }
@@ -477,187 +481,187 @@ public class ScreenService extends Service implements OnClickListener,
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-        case R.id.screenshot:
-            initImageReader();
-            if (!mScreenSharing) {
+            case R.id.screenshot:
+                initImageReader();
+                if (!mScreenSharing) {
                 /*
                  * 为何要这样执行: createVirtualDisplay方法可以看成是一个异步的方法,需要执行时间
                  * 若是不延迟的话,有可能会发生开始读取的时候还没有执行完毕,返回为空.下面几处调用同
                  */
-                Handler handler1 = new Handler();
-                handler1.postDelayed(new Runnable() {
-                    public void run() {
-                        // start virtual
-                        startScreenShot();
-                        hideAllButton();
+                    Handler handler1 = new Handler();
+                    handler1.postDelayed(new Runnable() {
+                        public void run() {
+                            // start virtual
+                            startScreenShot();
+                            hideAllButton();
+                        }
+
+                    }, 0);
+
+                    handler1.postDelayed(new Runnable() {
+                        public void run() {
+                            // capture the screen
+                            String screenshotPath = Utils.getScreenshotPath();
+                            startCapture(screenshotPath);
+                        }
+                    }, 500);
+
+                    handler1.postDelayed(new Runnable() {
+                        public void run() {
+                            stopVirtual();
+                            normalButton();
+                            mSoundPool.play(1, mCurrent, mCurrent, 1, 0, 1f);
+                            Utils.showToast(ScreenService.this, "截屏成功");
+                        }
+                    }, 500);
+
+                }
+                break;
+            case R.id.start_record:
+                hideAllButton();
+                final EditText editText = new EditText(this);
+                editText.setBackgroundColor(Color.TRANSPARENT);
+                editText.setTextColor(Color.BLACK);
+                // 防止某些特殊机型会在选择输入内容的时候发生FC
+                editText.setCustomSelectionActionModeCallback(new Callback() {
+                    @Override
+                    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                        return false;
                     }
 
-                }, 0);
+                    @Override
+                    public void onDestroyActionMode(ActionMode mode) {
 
-                handler1.postDelayed(new Runnable() {
-                    public void run() {
-                        // capture the screen
-                        String screenshotPath = Utils.getScreenshotPath();
-                        startCapture(screenshotPath);
                     }
-                }, 500);
 
-                handler1.postDelayed(new Runnable() {
-                    public void run() {
-                        stopVirtual();
-                        normalButton();
-                        mSoundPool.play(1, mCurrent, mCurrent, 1, 0, 1f);
-                        Utils.showToast(ScreenService.this, "截屏成功");
+                    @Override
+                    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                        return false;
                     }
-                }, 500);
 
-            }
-            break;
-        case R.id.start_record:
-            hideAllButton();
-            final EditText editText = new EditText(this);
-            editText.setBackgroundColor(Color.TRANSPARENT);
-            editText.setTextColor(Color.BLACK);
-            // 防止某些特殊机型会在选择输入内容的时候发生FC
-            editText.setCustomSelectionActionModeCallback(new Callback() {
-                @Override
-                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                    return false;
-                }
+                    @Override
+                    public boolean onActionItemClicked(ActionMode mode,
+                                                       MenuItem item) {
+                        return false;
+                    }
+                });
+                mAlertDialog = new AlertDialog.Builder(new ContextThemeWrapper(
+                        this, R.style.AppTheme))
+                        .setTitle("请输入视屏名字")
+                        .setView(editText)
+                        .setNegativeButton("确定",
+                                new DialogInterface.OnClickListener() {
 
-                @Override
-                public void onDestroyActionMode(ActionMode mode) {
-
-                }
-
-                @Override
-                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    return false;
-                }
-
-                @Override
-                public boolean onActionItemClicked(ActionMode mode,
-                        MenuItem item) {
-                    return false;
-                }
-            });
-            mAlertDialog = new AlertDialog.Builder(new ContextThemeWrapper(
-                    this, R.style.AppTheme))
-                    .setTitle("请输入视屏名字")
-                    .setView(editText)
-                    .setNegativeButton("确定",
-                            new DialogInterface.OnClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog,
-                                        int which) {
-                                    Field field = null;
-                                    try {
-                                        // 利用反射,来控制dialog若是不符合条件时候不被关闭
-                                        field = dialog.getClass()
-                                                .getSuperclass()
-                                                .getDeclaredField("mShowing");
-                                        field.setAccessible(true);
-                                        field.set(dialog, false);
-                                        // field.set(dialog, true);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    String name = editText.getText().toString();
-                                    Pattern p = Pattern
-                                            .compile("[ *^/\\\\?:<>|\"]");
-                                    Matcher m = p.matcher(name);
-
-                                    // 匹配上面的字符
-                                    if (TextUtils.isEmpty(name.trim())) {
-                                        Utils.showToast(ScreenService.this,
-                                                "文件名不能为空");
-
-                                    } else if (m.find()) {
-                                        Utils.showToast(ScreenService.this,
-                                                "文件名不能包含特殊字符");
-                                        return;
-                                    } else if (name.trim().length() > 100) {
-                                        Utils.showToast(ScreenService.this,
-                                                "文件名长度不能超过100");
-                                        return;
-                                    } else if (Utils.checkRecordFileExist(name)) {
-                                        Utils.showToast(ScreenService.this,
-                                                "文件名已经存在,请更改");
-                                        return;
-                                    } else {
-                                        Utils.checkRecordFolderFile();
-                                        initRecorder(name);
-                                        prepareRecorder();
-                                        shareScreen();
-                                        Utils.showToast(ScreenService.this,
-                                                "录屏开始");
-                                        ((MediaProjectionApplication) getApplication())
-                                                .setInRecord(true);
-                                        inRecordButton();
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        Field field = null;
                                         try {
+                                            // 利用反射,来控制dialog若是不符合条件时候不被关闭
+                                            field = dialog.getClass()
+                                                    .getSuperclass()
+                                                    .getDeclaredField("mShowing");
+                                            field.setAccessible(true);
+                                            field.set(dialog, false);
+                                            // field.set(dialog, true);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        String name = editText.getText().toString();
+                                        Pattern p = Pattern
+                                                .compile("[ *^/\\\\?:<>|\"]");
+                                        Matcher m = p.matcher(name);
+
+                                        // 匹配上面的字符
+                                        if (TextUtils.isEmpty(name.trim())) {
+                                            Utils.showToast(ScreenService.this,
+                                                    "文件名不能为空");
+
+                                        } else if (m.find()) {
+                                            Utils.showToast(ScreenService.this,
+                                                    "文件名不能包含特殊字符");
+                                            return;
+                                        } else if (name.trim().length() > 100) {
+                                            Utils.showToast(ScreenService.this,
+                                                    "文件名长度不能超过100");
+                                            return;
+                                        } else if (Utils.checkRecordFileExist(name)) {
+                                            Utils.showToast(ScreenService.this,
+                                                    "文件名已经存在,请更改");
+                                            return;
+                                        } else {
+                                            Utils.checkRecordFolderFile();
+                                            initRecorder(name);
+                                            prepareRecorder();
+                                            shareScreen();
+                                            Utils.showToast(ScreenService.this,
+                                                    "录屏开始");
+                                            ((MediaProjectionApplication) getApplication())
+                                                    .setInRecord(true);
+                                            inRecordButton();
+                                            try {
+                                                field.set(dialog, true);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            dialog.dismiss();
+                                        }
+                                    }
+                                })
+                        .setPositiveButton("取消",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        Field field = null;
+                                        try {
+                                            // 利用反射,来控制dialog若是不符合条件时候不被关闭
+                                            field = dialog.getClass()
+                                                    .getSuperclass()
+                                                    .getDeclaredField("mShowing");
+                                            field.setAccessible(true);
                                             field.set(dialog, true);
+                                            // field.set(dialog, false);
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
                                         dialog.dismiss();
+                                        normalButton();
                                     }
-                                }
-                            })
-                    .setPositiveButton("取消",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog,
-                                        int which) {
-                                    Field field = null;
-                                    try {
-                                        // 利用反射,来控制dialog若是不符合条件时候不被关闭
-                                        field = dialog.getClass()
-                                                .getSuperclass()
-                                                .getDeclaredField("mShowing");
-                                        field.setAccessible(true);
-                                        field.set(dialog, true);
-                                        // field.set(dialog, false);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                    dialog.dismiss();
-                                    normalButton();
-                                }
-                            }).setCancelable(false).create();
-            mAlertDialog.getWindow().setType(
-                    WindowManager.LayoutParams.TYPE_PHONE);
-            mAlertDialog.show();
+                                }).setCancelable(false).create();
+                mAlertDialog.getWindow().setType(
+                        WindowManager.LayoutParams.TYPE_PHONE);
+                mAlertDialog.show();
 
-            break;
-        case R.id.stop_record:
-            stopRecorder();
-            stopScreenSharing();
-            normalButton();
-            Utils.showToast(this, "录屏结束");
-            ((MediaProjectionApplication) getApplication()).setInRecord(false);
-            break;
-        default:
-            break;
+                break;
+            case R.id.stop_record:
+                stopRecorder();
+                stopScreenSharing();
+                normalButton();
+                Utils.showToast(this, "录屏结束");
+                ((MediaProjectionApplication) getApplication()).setInRecord(false);
+                break;
+            default:
+                break;
         }
     }
 
     @Override
     public boolean onLongClick(View v) {
         switch (v.getId()) {
-        case R.id.start_record:
-        case R.id.screenshot:
-            if (!inOneTouch) {
-                Intent intent = new Intent();
-                intent.setClass(this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            }
-            break;
+            case R.id.start_record:
+            case R.id.screenshot:
+                if (!inOneTouch) {
+                    Intent intent = new Intent();
+                    intent.setClass(this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
         return true;
     }

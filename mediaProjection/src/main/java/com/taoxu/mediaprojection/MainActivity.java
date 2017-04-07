@@ -19,6 +19,9 @@ import android.widget.Button;
 
 import java.lang.reflect.Method;
 
+/**
+ * Created by tao.xu on 2016/01/28.
+ */
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     private Button start;

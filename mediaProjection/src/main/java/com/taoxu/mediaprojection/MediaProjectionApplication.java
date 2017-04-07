@@ -4,6 +4,9 @@ import android.app.Application;
 import android.content.Intent;
 import android.media.projection.MediaProjectionManager;
 
+/**
+ * Created by tao.xu on 2016/01/28.
+ */
 public class MediaProjectionApplication extends Application {
     private boolean inRecord;
     private Intent intent;

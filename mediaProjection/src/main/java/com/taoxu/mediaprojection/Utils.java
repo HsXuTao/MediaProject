@@ -1,13 +1,16 @@
 package com.taoxu.mediaprojection;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import android.content.Context;
 import android.os.Handler;
 import android.widget.Toast;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * Created by tao.xu on 2016/01/28.
+ */
 public class Utils {
     public final static String ROOT_FOLDER_PATH = "/sdcard/MediaProjection/";
     public final static String PICTURE_FOLDER_PATH = ROOT_FOLDER_PATH
