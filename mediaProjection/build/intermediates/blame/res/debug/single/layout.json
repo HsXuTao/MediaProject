@@ -4,12 +4,12 @@
         "source": "D:\\MyCode\\MediaProject\\mediaProjection\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\22.2.0\\res\\layout\\notification_template_part_chronometer.xml"
     },
     {
-        "merged": "D:\\MyCode\\MediaProject\\mediaProjection\\build\\intermediates\\res\\merged\\debug\\layout\\notification_media_action.xml",
-        "source": "D:\\MyCode\\MediaProject\\mediaProjection\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\22.2.0\\res\\layout\\notification_media_action.xml"
-    },
-    {
         "merged": "D:\\MyCode\\MediaProject\\mediaProjection\\build\\intermediates\\res\\merged\\debug\\layout\\abc_action_mode_close_item_material.xml",
         "source": "D:\\MyCode\\MediaProject\\mediaProjection\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\22.2.0\\res\\layout\\abc_action_mode_close_item_material.xml"
+    },
+    {
+        "merged": "D:\\MyCode\\MediaProject\\mediaProjection\\build\\intermediates\\res\\merged\\debug\\layout\\notification_media_action.xml",
+        "source": "D:\\MyCode\\MediaProject\\mediaProjection\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\22.2.0\\res\\layout\\notification_media_action.xml"
     },
     {
         "merged": "D:\\MyCode\\MediaProject\\mediaProjection\\build\\intermediates\\res\\merged\\debug\\layout\\abc_search_view.xml",

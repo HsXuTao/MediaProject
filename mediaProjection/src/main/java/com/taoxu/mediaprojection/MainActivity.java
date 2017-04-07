@@ -16,7 +16,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Toast;
 
 import java.lang.reflect.Method;
 
@@ -111,9 +110,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start:
-
                 if (Build.VERSION.SDK_INT >= 23 && !getAppOps(this)) {
-
                     AlertDialog dialog = new AlertDialog.Builder(this).setTitle("提示").setMessage("应用可能未获得悬浮窗权限，点击确定进入设置页面")
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
@@ -130,7 +127,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 boolean flag = ((MediaProjectionApplication) getApplication())
                         .isInRecord();
                 if (!flag) {
-                    stop();
+                    if (intent != null && result != 0) {
+                        stop();
+                    } else {
+                        Utils.showToast(this, "录屏功能未开启");
+                    }
                 } else {
                     Utils.showToast(this, "请先停止录屏操作");
                 }
@@ -143,17 +144,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void start() {
         if (intent != null && result != 0) {
-            // Service1.mResultCode = resultCode;
-            // Service1.mResultData = data;
-            ((MediaProjectionApplication) getApplication()).setResult(result);
-            ((MediaProjectionApplication) getApplication()).setIntent(intent);
-            startScreenService();
+            Utils.showToast(this, "您的录屏功能正在运行，请停止后再启动");
+//            ((MediaProjectionApplication) getApplication()).setResult(result);
+//            ((MediaProjectionApplication) getApplication()).setIntent(intent);
+//            startScreenService();
 
         } else {
             startActivityForResult(
                     mMediaProjectionManager.createScreenCaptureIntent(),
                     REQUEST_MEDIA_PROJECTION);
-            // Service1.mMediaProjectionManager1 = mMediaProjectionManager;
             ((MediaProjectionApplication) getApplication())
                     .setMediaProjectionManager(mMediaProjectionManager);
         }
@@ -164,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MEDIA_PROJECTION) {
             if (resultCode != Activity.RESULT_OK) {
-                Toast.makeText(this, "同意录屏后才能使用", Toast.LENGTH_SHORT).show();
+                Utils.showToast(this, "同意录屏后才能使用");
                 return;
             } else if (data != null && resultCode != 0) {
                 result = resultCode;
@@ -187,5 +186,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         stopService(intent);
         ((MediaProjectionApplication) getApplication())
                 .freeMediaProjectionManager();
+        this.intent = null;
+        this.result = 0;
+
     }
 }
