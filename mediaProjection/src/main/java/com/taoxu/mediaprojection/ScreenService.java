@@ -209,7 +209,7 @@ public class ScreenService extends Service implements OnClickListener,
                 .getMediaProjectionManager();
         mMediaProjection = mMediaProjectionManager.getMediaProjection(
                 mResultCode, mResultData);
-        mMediaProjection.registerCallback(new MediaProjectionCallback(), null);
+        mMediaProjection.registerCallback(new MediaProjectionCallback(), new Handler(getApplication().getMainLooper()));
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -304,7 +304,7 @@ public class ScreenService extends Service implements OnClickListener,
                     e.printStackTrace();
                 }
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
             Utils.deleteFile(screenshotPath);
         }
@@ -316,6 +316,7 @@ public class ScreenService extends Service implements OnClickListener,
         }
         mVirtualDisplay.release();
         mVirtualDisplay = null;
+        mImageReader.close();
     }
 
     private void shareScreen() {
@@ -364,7 +365,6 @@ public class ScreenService extends Service implements OnClickListener,
     }
 
     private void initImageReader() {
-
         mImageReader = ImageReader.newInstance(mDisplayWidth, mDisplayHeight, 0x1, 2); // ImageFormat.RGB_565
     }
 
@@ -486,10 +486,12 @@ public class ScreenService extends Service implements OnClickListener,
             case R.id.screenshot:
                 initImageReader();
                 if (!mScreenSharing) {
-                /*
-                 * 为何要这样执行: createVirtualDisplay方法可以看成是一个异步的方法,需要执行时间
-                 * 若是不延迟的话,有可能会发生开始读取的时候还没有执行完毕,返回为空.下面几处调用同
-                 */
+                    /*
+                     * 为何要这样执行: createVirtualDisplay方法将屏幕数据加载到mImageReader,需要执行时间
+                     * 若是不延迟的话,有可能会发生开始读取的时候还没有执行完毕,返回为空，造成问题
+                     *
+                     * 而且在录屏过程中，将悬浮窗的按钮隐藏了，所以也需要延迟，防止截取出来的图片可能会带有悬浮窗按钮
+                     */
                     Handler handler1 = new Handler();
                     handler1.postDelayed(new Runnable() {
                         public void run() {
@@ -512,11 +514,11 @@ public class ScreenService extends Service implements OnClickListener,
                         public void run() {
                             stopVirtual();
                             normalButton();
-                            if(Utils.isExistsFile(screenshotPath)) {
+                            if (Utils.isExistsFile(screenshotPath)) {
                                 mSoundPool.play(1, mCurrent, mCurrent, 1, 0, 1f);
                                 Utils.showToast(ScreenService.this, "截屏成功");
-                            }else{
-                                Utils.showToast(getApplicationContext(),"截屏失败，您可能没有截屏权限");
+                            } else {
+                                Utils.showToast(getApplicationContext(), "截屏失败，您可能没有截屏权限");
                             }
                         }
                     }, 1000);

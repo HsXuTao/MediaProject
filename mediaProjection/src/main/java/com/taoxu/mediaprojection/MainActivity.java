@@ -4,19 +4,19 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AppOpsManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.projection.MediaProjectionManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
 import java.lang.reflect.Method;
+
+import permission.FloatWindowManager;
 
 /**
  * Created by tao.xu on 2016/01/28.
@@ -97,18 +97,23 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start:
-                if (Build.VERSION.SDK_INT >= 23 && !getAppOps(this)) {
-                    AlertDialog dialog = new AlertDialog.Builder(this).setTitle("提示").setMessage("应用可能未获得悬浮窗权限，点击确定进入设置页面")
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Utils.getAppDetailSettingIntent(MainActivity.this);
-                                }
-                            }).setNegativeButton("取消", null).create();
-                    dialog.show();
-                } else {
+                if(FloatWindowManager.getInstance().checkPermission(this)){
                     start();
+                }else{
+                    FloatWindowManager.getInstance().applyPermission(this);
                 }
+//                if (Build.VERSION.SDK_INT >= 23 && !getAppOps(this)) {
+//                    AlertDialog dialog = new AlertDialog.Builder(this).setTitle("提示").setMessage("应用可能未获得悬浮窗权限，点击确定进入设置页面")
+//                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    Utils.getAppDetailSettingIntent(MainActivity.this);
+//                                }
+//                            }).setNegativeButton("取消", null).create();
+//                    dialog.show();
+//                } else {
+//                    start();
+//                }
                 break;
             case R.id.stop:
                 boolean flag = ((MediaProjectionApplication) getApplication())
