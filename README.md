@@ -16,5 +16,5 @@
 
 
 V1.1.0
-发布第一版MediaProject，增加了悬浮窗的提示信息，修复了权限未提供时候可能会造成的崩溃的问题。
+发布第一版MediaProject，增加了悬浮窗的提示信息，修复了权限未提供时候可能会造成的崩溃的问题,修复了悬浮窗显示后，主页退出，再次进来会出现的状态判定异常的问题。
 新增悬浮窗权限的判定,非常感谢[https://github.com/zhaozepeng/FloatWindowPermission](https://github.com/zhaozepeng/FloatWindowPermission) 里面的对权限判定的内容。

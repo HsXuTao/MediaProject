@@ -2,19 +2,15 @@ package com.taoxu.mediaprojection;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.media.projection.MediaProjectionManager;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-
-import java.lang.reflect.Method;
 
 import permission.FloatWindowManager;
 
@@ -45,42 +41,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         stop.setOnClickListener(this);
     }
 
-    /**
-     * 判断 悬浮窗口权限是否打开
-     *
-     * @param context
-     * @return true 允许  false禁止
-     */
-    public static boolean getAppOps(Context context) {
-        try {
-            Object object = context.getSystemService("appops");
-            if (object == null) {
-                return false;
-            }
-            Class localClass = object.getClass();
-            Class[] arrayOfClass = new Class[3];
-            arrayOfClass[0] = Integer.TYPE;
-            arrayOfClass[1] = Integer.TYPE;
-            arrayOfClass[2] = String.class;
-            Method method = localClass.getMethod("checkOp", arrayOfClass);
-            if (method == null) {
-                return false;
-            }
-            Object[] arrayOfObject1 = new Object[3];
-            arrayOfObject1[0] = Integer.valueOf(24);
-            arrayOfObject1[1] = Integer.valueOf(Binder.getCallingUid());
-            arrayOfObject1[2] = context.getPackageName();
-            int m = ((Integer) method.invoke(object, arrayOfObject1)).intValue();
-            return m == AppOpsManager.MODE_ALLOWED;
-        } catch (Exception ex) {
-
-        }
-        return false;
-    }
 
     private void initData() {
         // TODO Auto-generated method stub
         mMediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+
+        intent = ((MediaProjectionApplication) getApplication()).getIntent();
+        result = ((MediaProjectionApplication) getApplication()).getResult();
     }
 
     private void initParams() {
@@ -97,9 +64,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start:
-                if(FloatWindowManager.getInstance().checkPermission(this)){
+                if (FloatWindowManager.getInstance().checkPermission(this)) {
                     start();
-                }else{
+                } else {
                     FloatWindowManager.getInstance().applyPermission(this);
                 }
 //                if (Build.VERSION.SDK_INT >= 23 && !getAppOps(this)) {
@@ -119,11 +86,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 boolean flag = ((MediaProjectionApplication) getApplication())
                         .isInRecord();
                 if (!flag) {
-                    if (intent != null && result != 0) {
-                        stop();
-                    } else {
-                        Utils.showToast(this, "录屏功能未开启");
-                    }
+                    stop();
                 } else {
                     Utils.showToast(this, "请先停止录屏操作");
                 }
@@ -142,11 +105,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 //            startScreenService();
 
         } else {
-            startActivityForResult(
-                    mMediaProjectionManager.createScreenCaptureIntent(),
+            startActivityForResult(mMediaProjectionManager.createScreenCaptureIntent(),
                     REQUEST_MEDIA_PROJECTION);
-            ((MediaProjectionApplication) getApplication())
-                    .setMediaProjectionManager(mMediaProjectionManager);
+            ((MediaProjectionApplication) getApplication()).setMediaProjectionManager(mMediaProjectionManager);
         }
     }
 
@@ -156,12 +117,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         if (requestCode == REQUEST_MEDIA_PROJECTION) {
             if (resultCode != Activity.RESULT_OK) {
                 Utils.showToast(this, "同意录屏后才能使用");
-                return;
             } else if (data != null && resultCode != 0) {
                 result = resultCode;
                 intent = data;
-                ((MediaProjectionApplication) getApplication())
-                        .setResult(resultCode);
+                ((MediaProjectionApplication) getApplication()).setResult(resultCode);
                 ((MediaProjectionApplication) getApplication()).setIntent(data);
                 startScreenService();
             }
@@ -174,12 +133,16 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     }
 
     private void stop() {
-        Intent intent = new Intent(getApplicationContext(), ScreenService.class);
-        stopService(intent);
-        ((MediaProjectionApplication) getApplication())
-                .freeMediaProjectionManager();
-        this.intent = null;
-        this.result = 0;
+        if (intent != null && result != 0) {
+            Intent intent = new Intent(getApplicationContext(), ScreenService.class);
+            stopService(intent);
+            ((MediaProjectionApplication) getApplication()).freeMediaProjectionManager();
+            ((MediaProjectionApplication) getApplication()).freeIntentAndResult();
+            this.intent = null;
+            this.result = 0;
+        } else {
+            Utils.showToast(this, "录屏功能未开启");
+        }
 
     }
 }

@@ -201,14 +201,10 @@ public class ScreenService extends Service implements OnClickListener,
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void setUpMediaProjection() {
-        mResultData = ((MediaProjectionApplication) getApplication())
-                .getIntent();
-        mResultCode = ((MediaProjectionApplication) getApplication())
-                .getResult();
-        mMediaProjectionManager = ((MediaProjectionApplication) getApplication())
-                .getMediaProjectionManager();
-        mMediaProjection = mMediaProjectionManager.getMediaProjection(
-                mResultCode, mResultData);
+        mResultData = ((MediaProjectionApplication) getApplication()).getIntent();
+        mResultCode = ((MediaProjectionApplication) getApplication()).getResult();
+        mMediaProjectionManager = ((MediaProjectionApplication) getApplication()).getMediaProjectionManager();
+        mMediaProjection = mMediaProjectionManager.getMediaProjection(mResultCode, mResultData);
         mMediaProjection.registerCallback(new MediaProjectionCallback(), new Handler(getApplication().getMainLooper()));
     }
 

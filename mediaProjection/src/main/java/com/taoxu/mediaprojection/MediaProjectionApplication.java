@@ -51,4 +51,13 @@ public class MediaProjectionApplication extends Application {
     public void setResult(int result) {
         this.result = result;
     }
+
+    public void freeIntentAndResult() {
+        if (intent != null) {
+            intent = null;
+        }
+        if (result != 0) {
+            result = 0;
+        }
+    }
 }
