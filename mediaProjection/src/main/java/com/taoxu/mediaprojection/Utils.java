@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.widget.Toast;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -16,7 +17,7 @@ import java.util.Date;
  * Created by tao.xu on 2016/01/28.
  */
 public class Utils {
-    public final static String ROOT_FOLDER_PATH = Environment.getExternalStorageDirectory().getPath()+"/MediaProjection/";
+    public final static String ROOT_FOLDER_PATH = Environment.getExternalStorageDirectory().getPath() + "/MediaProjection/";
     public final static String PICTURE_FOLDER_PATH = ROOT_FOLDER_PATH
             + "Picture/";
     public final static String VIDEO_FOLDER_PATH = ROOT_FOLDER_PATH + "Video/";
@@ -50,7 +51,8 @@ public class Utils {
 
     /**
      * 删除单个文件
-     * @param   filePath    被删除文件的文件名
+     *
+     * @param filePath 被删除文件的文件名
      * @return 文件删除成功返回true，否则返回false
      */
     public static boolean deleteFile(String filePath) {
@@ -60,9 +62,11 @@ public class Utils {
         }
         return false;
     }
+
     /**
      * 删除单个文件
-     * @param   filePath    被删除文件的文件名
+     *
+     * @param filePath 被删除文件的文件名
      * @return 文件删除成功返回true，否则返回false
      */
     public static boolean isExistsFile(String filePath) {
@@ -72,7 +76,6 @@ public class Utils {
         }
         return false;
     }
-
 
 
     public static void checkRecordFolderFile() {
@@ -138,5 +141,29 @@ public class Utils {
             localIntent.putExtra("com.android.settings.ApplicationPkgName", context.getPackageName());
         }
         context.startActivity(localIntent);
+    }
+
+    public static void setAlertDialogAutoClose(android.app.AlertDialog dialog, boolean canClose) {
+        Field field = null;
+        try {
+            // 利用反射,来控制dialog若是不符合条件时候不被关闭
+            field = dialog.getClass().getSuperclass().getDeclaredField("mShowing");
+            field.setAccessible(true);
+            field.set(dialog, canClose);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setAlertDialogAutoClose(android.support.v7.app.AlertDialog dialog, boolean canClose) {
+        Field field = null;
+        try {
+            // 利用反射,来控制dialog若是不符合条件时候不被关闭
+            field = dialog.getClass().getSuperclass().getSuperclass().getDeclaredField("mShowing");
+            field.setAccessible(true);
+            field.set(dialog, canClose);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

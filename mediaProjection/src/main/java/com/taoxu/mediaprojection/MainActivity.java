@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 } else {
                     FloatWindowManager.getInstance().applyPermission(this);
                 }
+
 //                if (Build.VERSION.SDK_INT >= 23 && !getAppOps(this)) {
 //                    AlertDialog dialog = new AlertDialog.Builder(this).setTitle("提示").setMessage("应用可能未获得悬浮窗权限，点击确定进入设置页面")
 //                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {

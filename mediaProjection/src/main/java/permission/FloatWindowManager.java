@@ -12,7 +12,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.WindowManager;
+
+import com.taoxu.mediaprojection.R;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -176,6 +179,8 @@ public class FloatWindowManager {
         //这里也一样，魅族系统需要单独适配
         if (RomUtils.checkIsMeizuRom()) {
             meizuROMPermissionApply(context);
+        } else if(RomUtils.checkIsHuaweiRom()){
+            huaweiROMPermissionApply(context);
         } else {
             if (Build.VERSION.SDK_INT >= 23) {
                 showConfirmDialog(context, new OnConfirmResult() {
@@ -211,8 +216,7 @@ public class FloatWindowManager {
         if (dialog != null && dialog.isShowing()) {
             dialog.dismiss();
         }
-
-        dialog = new AlertDialog.Builder(context).setCancelable(true).setTitle("")
+        dialog = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AppTheme)).setCancelable(false).setTitle("")
                 .setMessage(message)
                 .setPositiveButton("现在去开启",
                         new DialogInterface.OnClickListener() {
@@ -237,7 +241,7 @@ public class FloatWindowManager {
         void confirmResult(boolean confirm);
     }
 
-    private int dp2px(Context context, float dp){
+    private int dp2px(Context context, float dp) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dp * scale + 0.5f);
     }

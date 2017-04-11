@@ -50,7 +50,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -387,12 +386,9 @@ public class ScreenService extends Service implements OnClickListener,
 
                     if (Math.abs(event.getRawX() - x) > mTouchSlop
                             || Math.abs(event.getRawY() - y) > mTouchSlop) {
-                        mSideFloatLayoutParams.x = (int) event.getRawX()
-                                - mScreenshot.getMeasuredWidth() / 2;
-                        mSideFloatLayoutParams.y = (int) event.getRawY()
-                                - mScreenshot.getMeasuredHeight() / 2 - 25;
-                        mSideWindowManager.updateViewLayout(mSideFloatLayout,
-                                mSideFloatLayoutParams);
+                        mSideFloatLayoutParams.x = (int) event.getRawX() - mScreenshot.getMeasuredWidth() / 2;
+                        mSideFloatLayoutParams.y = (int) event.getRawY() - mScreenshot.getMeasuredHeight() / 2 - 25;
+                        mSideWindowManager.updateViewLayout(mSideFloatLayout, mSideFloatLayoutParams);
                         mCurrentTime = System.currentTimeMillis();
                         inOneTouch = true;
                         return true;
@@ -526,7 +522,7 @@ public class ScreenService extends Service implements OnClickListener,
                 final EditText editText = new EditText(this);
                 editText.setBackgroundColor(Color.TRANSPARENT);
                 editText.setTextColor(Color.BLACK);
-                editText.setMaxLines(1);
+                editText.setSingleLine(true);
                 // 防止某些特殊机型会在选择输入内容的时候发生FC
                 editText.setCustomSelectionActionModeCallback(new Callback() {
                     @Override
@@ -559,40 +555,24 @@ public class ScreenService extends Service implements OnClickListener,
                                     @Override
                                     public void onClick(DialogInterface dialog,
                                                         int which) {
-                                        Field field = null;
-                                        try {
-                                            // 利用反射,来控制dialog若是不符合条件时候不被关闭
-                                            field = dialog.getClass()
-                                                    .getSuperclass()
-                                                    .getDeclaredField("mShowing");
-                                            field.setAccessible(true);
-                                            field.set(dialog, false);
-                                            // field.set(dialog, true);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
+                                        Utils.setAlertDialogAutoClose(mAlertDialog, false);
 
                                         String name = editText.getText().toString();
-                                        Pattern p = Pattern
-                                                .compile("[ *^/\\\\?:<>|\"]");
+                                        Pattern p = Pattern.compile("[ *^/\\\\?:<>|\"]");
                                         Matcher m = p.matcher(name);
 
                                         // 匹配上面的字符
                                         if (TextUtils.isEmpty(name.trim())) {
-                                            Utils.showToast(ScreenService.this,
-                                                    "文件名不能为空");
-
+                                            Utils.showToast(ScreenService.this, "文件名不能为空");
+                                            return;
                                         } else if (m.find()) {
-                                            Utils.showToast(ScreenService.this,
-                                                    "文件名不能包含特殊字符");
+                                            Utils.showToast(ScreenService.this, "文件名不能包含特殊字符");
                                             return;
                                         } else if (name.trim().length() > 100) {
-                                            Utils.showToast(ScreenService.this,
-                                                    "文件名长度不能超过100");
+                                            Utils.showToast(ScreenService.this, "文件名长度不能超过100");
                                             return;
                                         } else if (Utils.checkRecordFileExist(name)) {
-                                            Utils.showToast(ScreenService.this,
-                                                    "文件名已经存在,请更改");
+                                            Utils.showToast(ScreenService.this, "文件名已经存在,请更改");
                                             return;
                                         } else {
                                             Utils.checkRecordFolderFile();
@@ -605,11 +585,7 @@ public class ScreenService extends Service implements OnClickListener,
                                                 ((MediaProjectionApplication) getApplication())
                                                         .setInRecord(true);
                                                 inRecordButton();
-                                                try {
-                                                    field.set(dialog, true);
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
+                                                Utils.setAlertDialogAutoClose(mAlertDialog, true);
                                                 dialog.dismiss();
                                             } catch (IOException e) {
                                                 e.printStackTrace();
@@ -620,19 +596,8 @@ public class ScreenService extends Service implements OnClickListener,
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
 
-                                                                Field field = null;
-                                                                try {
-                                                                    // 利用反射,来控制dialog若是不符合条件时候不被关闭
-                                                                    field = mAlertDialog.getClass()
-                                                                            .getSuperclass()
-                                                                            .getDeclaredField("mShowing");
-                                                                    field.setAccessible(true);
-                                                                    field.set(mAlertDialog, true);
-                                                                    normalButton();
-                                                                    // field.set(dialog, false);
-                                                                } catch (Exception e) {
-                                                                    e.printStackTrace();
-                                                                }
+                                                                Utils.setAlertDialogAutoClose(mAlertDialog, true);
+                                                                normalButton();
                                                                 mAlertDialog.dismiss();
                                                                 Utils.getAppDetailSettingIntent(ScreenService.this);
                                                             }
@@ -649,18 +614,7 @@ public class ScreenService extends Service implements OnClickListener,
                                     @Override
                                     public void onClick(DialogInterface dialog,
                                                         int which) {
-                                        Field field = null;
-                                        try {
-                                            // 利用反射,来控制dialog若是不符合条件时候不被关闭
-                                            field = dialog.getClass()
-                                                    .getSuperclass()
-                                                    .getDeclaredField("mShowing");
-                                            field.setAccessible(true);
-                                            field.set(dialog, true);
-                                            // field.set(dialog, false);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
+                                        Utils.setAlertDialogAutoClose(mAlertDialog, true);
                                         dialog.dismiss();
                                         normalButton();
                                     }
