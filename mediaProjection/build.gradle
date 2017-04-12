@@ -6,6 +6,8 @@ android {
 
     defaultConfig {
         applicationId "com.taoxu.mediaprojection"
+        versionCode 1
+        versionName "V1.1.0"
         minSdkVersion 21
         targetSdkVersion 22
     }

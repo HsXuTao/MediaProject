@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.ActionMode.Callback;
 import android.view.ContextThemeWrapper;
@@ -59,7 +60,7 @@ import java.util.regex.Pattern;
  */
 public class ScreenService extends Service implements OnClickListener,
         OnLongClickListener {
-
+    private static final String TAG = ScreenService.class.getSimpleName();
     private MediaRecorder mMediaRecorder;
     private MediaProjection mMediaProjection;
     private Intent mResultData;
@@ -109,7 +110,10 @@ public class ScreenService extends Service implements OnClickListener,
                     "MediaProjection service is running", service);
             startForeground(startId, notification);
         }
-        return super.onStartCommand(intent, flags, startId);
+
+        Intent intent2 = new Intent(getApplicationContext(),ProtectActivity.class);
+        startActivity(intent2);
+        return START_STICKY;
     }
 
     @Override
@@ -119,6 +123,7 @@ public class ScreenService extends Service implements OnClickListener,
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy");
         if (mSideWindowManager != null) {
             if (mSideFloatLayout != null) {
                 mSideWindowManager.removeView(mSideFloatLayout);
@@ -126,6 +131,24 @@ public class ScreenService extends Service implements OnClickListener,
         }
         stopMediaProjection();
         super.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        Log.d(TAG, "onLowMemory");
+        super.onLowMemory();
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        Log.d(TAG, "onTrimMemory  level:" + level);
+        super.onTrimMemory(level);
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Log.d(TAG, "onTaskRemoved  rootIntent:" + rootIntent);
+        super.onTaskRemoved(rootIntent);
     }
 
     private void hideAllButton() {
