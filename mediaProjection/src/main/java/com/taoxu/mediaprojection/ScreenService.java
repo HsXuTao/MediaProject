@@ -111,7 +111,7 @@ public class ScreenService extends Service implements OnClickListener,
             startForeground(startId, notification);
         }
 
-        Intent intent2 = new Intent(getApplicationContext(),ProtectActivity.class);
+        Intent intent2 = new Intent(getApplicationContext(), ProtectActivity.class);
         startActivity(intent2);
         return START_STICKY;
     }
@@ -406,13 +406,12 @@ public class ScreenService extends Service implements OnClickListener,
 
                     break;
                 case MotionEvent.ACTION_MOVE:
-
-                    if (Math.abs(event.getRawX() - x) > mTouchSlop
+                    if (inOneTouch) {
+                        updateView(event);
+                        return true;
+                    } else if (Math.abs(event.getRawX() - x) > mTouchSlop
                             || Math.abs(event.getRawY() - y) > mTouchSlop) {
-                        mSideFloatLayoutParams.x = (int) event.getRawX() - mScreenshot.getMeasuredWidth() / 2;
-                        mSideFloatLayoutParams.y = (int) event.getRawY() - mScreenshot.getMeasuredHeight() / 2 - 25;
-                        mSideWindowManager.updateViewLayout(mSideFloatLayout, mSideFloatLayoutParams);
-                        mCurrentTime = System.currentTimeMillis();
+                        updateView(event);
                         inOneTouch = true;
                         return true;
                     }
@@ -450,6 +449,19 @@ public class ScreenService extends Service implements OnClickListener,
             }
             return false; // 设置为false是保证OnClickListener能够被正常触发
         }
+
+        private void updateView(MotionEvent event) {
+            float offsetX = event.getRawX() - x;
+            float offsetY = event.getRawY() - y;
+            x = event.getRawX();
+            y = event.getRawY();
+            mSideFloatLayoutParams.x = (int) (mSideFloatLayoutParams.x + offsetX);
+            mSideFloatLayoutParams.y = (int) (mSideFloatLayoutParams.y + offsetY);
+//                        mSideFloatLayoutParams.x = (int) event.getRawX() - mSideFloatLayout.getMeasuredWidth() / 2;
+//                        mSideFloatLayoutParams.y = (int) event.getRawY() - mSideFloatLayout.getMeasuredHeight() / 2;
+            mSideWindowManager.updateViewLayout(mSideFloatLayout, mSideFloatLayoutParams);
+            mCurrentTime = System.currentTimeMillis();
+        }
     }
 
     @Override
@@ -473,7 +485,6 @@ public class ScreenService extends Service implements OnClickListener,
         } else {
             mSideFloatLayoutParams.x = screenWidth;
         }
-
         mSideWindowManager.updateViewLayout(mSideFloatLayout,
                 mSideFloatLayoutParams);
     }
