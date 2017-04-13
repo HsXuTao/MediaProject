@@ -111,8 +111,6 @@ public class ScreenService extends Service implements OnClickListener,
             startForeground(startId, notification);
         }
 
-        Intent intent2 = new Intent(getApplicationContext(), ProtectActivity.class);
-        startActivity(intent2);
         return START_STICKY;
     }
 
