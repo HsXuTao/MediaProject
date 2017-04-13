@@ -110,7 +110,6 @@ public class ScreenService extends Service implements OnClickListener,
                     "MediaProjection service is running", service);
             startForeground(startId, notification);
         }
-
         return START_STICKY;
     }
 

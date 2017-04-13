@@ -131,11 +131,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     private void startScreenService() {
 
-
-        Intent intent2 = new Intent(getApplicationContext(), ProtectActivity.class);
-        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent2);
-
         Intent intent = new Intent(getApplicationContext(), ScreenService.class);
         startService(intent);
     }
@@ -151,11 +146,18 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.e("onKeyDown","MainActivity----onKeyDown");
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+
+            Intent intent2 = new Intent(getApplicationContext(), ProtectActivity.class);
+            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent2);
+
             //启动一个意图,回到桌面
             Intent backHome = new Intent(Intent.ACTION_MAIN);
             backHome.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             backHome.addCategory(Intent.CATEGORY_HOME);
             startActivity(backHome);
+
+
             return true;
         }
         return super.onKeyDown(keyCode, event);

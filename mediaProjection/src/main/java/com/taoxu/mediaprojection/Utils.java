@@ -1,5 +1,7 @@
 package com.taoxu.mediaprojection;
 
+import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -165,5 +167,12 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static MediaProjectionApplication getApplication(Activity activity){
+        return (MediaProjectionApplication) activity.getApplication();
+    }
+    public static MediaProjectionApplication getApplication(Service service){
+        return (MediaProjectionApplication) service.getApplication();
     }
 }
