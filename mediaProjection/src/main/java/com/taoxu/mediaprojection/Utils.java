@@ -169,10 +169,28 @@ public class Utils {
         }
     }
 
-    public static MediaProjectionApplication getApplication(Activity activity){
+    public static String showTimeCount(long time) {
+        if (time >= 360000000) {
+            return "00:00";
+        }
+        String timeCount = "";
+        long hourc = time / 3600000;
+        long minuec = (time - hourc * 3600000) / (60000);
+        String minue = "0" + minuec;
+        minue = minue.substring(minue.length() - 2, minue.length());
+
+        long secc = (time - hourc * 3600000 - minuec * 60000) / 1000;
+        String sec = "0" + secc;
+        sec = sec.substring(sec.length() - 2, sec.length());
+        timeCount =  minue + ":" + sec;
+        return timeCount;
+    }
+
+    public static MediaProjectionApplication getApplication(Activity activity) {
         return (MediaProjectionApplication) activity.getApplication();
     }
-    public static MediaProjectionApplication getApplication(Service service){
+
+    public static MediaProjectionApplication getApplication(Service service) {
         return (MediaProjectionApplication) service.getApplication();
     }
 }

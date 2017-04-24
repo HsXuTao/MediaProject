@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v7.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -52,6 +53,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,7 +75,7 @@ public class ScreenService extends Service implements OnClickListener,
     private ImageReader mImageReader;
     private int mScreenDensity;
     private Notification notification;
-    private PendingIntent service;
+    private PendingIntent serviceIntent;
     private LayoutParams mSideFloatLayoutParams;
     private WindowManager mSideWindowManager;
     private View mSideFloatLayout;
@@ -88,6 +90,18 @@ public class ScreenService extends Service implements OnClickListener,
     private SoundPool mSoundPool;
     private float mCurrent;
     private AlertDialog mAlertDialog;
+    private int recLen = 0;
+    private Handler handler = new Handler();
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            recLen++;
+            if (mStoprecord != null) {
+                mStoprecord.setText(Utils.showTimeCount(recLen * 1000));
+            }
+            handler.postDelayed(this, 1000);
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -102,12 +116,16 @@ public class ScreenService extends Service implements OnClickListener,
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (notification == null) {
             // 此处是为了让Service作为前台Service,减少被系统kill掉的概率
-            notification = new Notification(R.drawable.ic_launcher,
-                    "MediaProjection service is running",
-                    System.currentTimeMillis());
-            service = PendingIntent.getService(this, 0, intent, 0);
-            notification.setLatestEventInfo(this, "MediaProjection",
-                    "MediaProjection service is running", service);
+            Intent broadcastIntent = new Intent(this, MainActivity.class);
+            broadcastIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            serviceIntent = PendingIntent.getActivity(this, UUID.randomUUID().hashCode(), broadcastIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            notification = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setContentTitle("MediaProjection")
+                    .setContentText("MediaProjection service is running")
+                    .setWhen(System.currentTimeMillis())
+                    .setContentIntent(serviceIntent)
+                    .build();
             startForeground(startId, notification);
         }
         return START_STICKY;
@@ -149,21 +167,18 @@ public class ScreenService extends Service implements OnClickListener,
     }
 
     private void hideAllButton() {
-        // TODO Auto-generated method stub
         mScreenrecord.setVisibility(View.INVISIBLE);
         mScreenshot.setVisibility(View.INVISIBLE);
         mStoprecord.setVisibility(View.INVISIBLE);
     }
 
     private void normalButton() {
-        // TODO Auto-generated method stub
         mScreenrecord.setVisibility(View.VISIBLE);
         mScreenshot.setVisibility(View.VISIBLE);
         mStoprecord.setVisibility(View.INVISIBLE);
     }
 
     private void inRecordButton() {
-        // TODO Auto-generated method stub
         mScreenrecord.setVisibility(View.GONE);
         mScreenshot.setVisibility(View.GONE);
         mStoprecord.setVisibility(View.VISIBLE);
@@ -252,10 +267,6 @@ public class ScreenService extends Service implements OnClickListener,
     }
 
     private VirtualDisplay createVirtualDisplay() {
-        // return mMediaProjection.createVirtualDisplay("ScreenSharingDemo",
-        // mDisplayWidth, mDisplayHeight, mScreenDensity,
-        // DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mSurface,
-        // null /* Callbacks */, null /* Handler */);
         return mMediaProjection
                 .createVirtualDisplay("ScreenSharing", mDisplayWidth,
                         mDisplayHeight, mScreenDensity,
@@ -263,16 +274,10 @@ public class ScreenService extends Service implements OnClickListener,
                         mImageReader.getSurface(), null /* Callbacks */, null /* Handler */);
     }
 
-    private void resizeVirtualDisplay() {
-        if (mVirtualDisplay == null) {
-            return;
-        }
-        mVirtualDisplay.resize(mDisplayWidth, mDisplayHeight, mScreenDensity);
-    }
-
     private class MediaProjectionCallback extends MediaProjection.Callback {
         @Override
         public void onStop() {
+            mMediaProjection.stop();
             mMediaProjection = null;
             stopScreenSharing();
         }
@@ -340,11 +345,14 @@ public class ScreenService extends Service implements OnClickListener,
         }
         mVirtualDisplay = createRecorderVirtualDisplay();
         mMediaRecorder.start();
+        recLen = 0;
+        handler.post(runnable);
+
     }
 
     private VirtualDisplay createRecorderVirtualDisplay() {
         return mMediaProjection
-                .createVirtualDisplay("MainActivity", mDisplayWidth,
+                .createVirtualDisplay(TAG, mDisplayWidth,
                         mDisplayHeight, mScreenDensity,
                         DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                         mMediaRecorder.getSurface(), null /* Callbacks */, null /* Handler */);
@@ -361,13 +369,15 @@ public class ScreenService extends Service implements OnClickListener,
 
     private void initRecorder(String name) {
         String path = Utils.VIDEO_FOLDER_PATH + name + ".mp4";
+
         if (mMediaRecorder == null) {
             mMediaRecorder = new MediaRecorder();
-        } else {
-            mMediaRecorder.reset();
         }
+        mMediaRecorder.reset();
+
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
@@ -375,8 +385,15 @@ public class ScreenService extends Service implements OnClickListener,
         mMediaRecorder.setVideoEncodingBitRate(1024 * 1024);
         // 视屏帧率
         mMediaRecorder.setVideoFrameRate(24);
+
         mMediaRecorder.setVideoSize(mDisplayWidth, mDisplayHeight);
         mMediaRecorder.setOutputFile(path);
+        mMediaRecorder.setOnErrorListener(new MediaRecorder.OnErrorListener() {
+            @Override
+            public void onError(MediaRecorder mr, int what, int extra) {
+                Log.e(TAG, "onError " + what);
+            }
+        });
     }
 
     private void initImageReader() {
@@ -659,6 +676,7 @@ public class ScreenService extends Service implements OnClickListener,
                 stopRecorder();
                 stopScreenSharing();
                 normalButton();
+                handler.removeCallbacks(runnable);
                 Utils.showToast(this, "录屏结束");
                 ((MediaProjectionApplication) getApplication()).setInRecord(false);
                 break;
