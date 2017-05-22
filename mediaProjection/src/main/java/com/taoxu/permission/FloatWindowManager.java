@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Facishare Technology Co., Ltd. All Rights Reserved.
  */
-package permission;
+package com.taoxu.permission;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -15,16 +15,14 @@ import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.WindowManager;
 
-import com.taoxu.mediaprojection.R;
+import com.taoxu.permission.rom.HuaweiUtils;
+import com.taoxu.permission.rom.MeizuUtils;
+import com.taoxu.permission.rom.MiuiUtils;
+import com.taoxu.permission.rom.QikuUtils;
+import com.taoxu.permission.rom.RomUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-import permission.rom.HuaweiUtils;
-import permission.rom.MeizuUtils;
-import permission.rom.MiuiUtils;
-import permission.rom.QikuUtils;
-import permission.rom.RomUtils;
 
 /**
  * Description:
@@ -176,7 +174,7 @@ public class FloatWindowManager {
      * 通用 rom 权限申请
      */
     private void commonROMPermissionApply(final Context context) {
-        //这里也一样，魅族系统需要单独适配
+        //这里也一样，魅族华为系统需要单独适配
         if (RomUtils.checkIsMeizuRom()) {
             meizuROMPermissionApply(context);
         } else if(RomUtils.checkIsHuaweiRom()){
@@ -216,7 +214,7 @@ public class FloatWindowManager {
         if (dialog != null && dialog.isShowing()) {
             dialog.dismiss();
         }
-        dialog = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AppTheme)).setCancelable(false).setTitle("")
+        dialog = new AlertDialog.Builder(new ContextThemeWrapper(context, android.R.style.Theme_Dialog)).setCancelable(false).setTitle("")
                 .setMessage(message)
                 .setPositiveButton("现在去开启",
                         new DialogInterface.OnClickListener() {

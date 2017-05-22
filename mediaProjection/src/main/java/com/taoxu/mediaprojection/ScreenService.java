@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.v7.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -347,7 +348,7 @@ public class ScreenService extends Service implements OnClickListener,
         mMediaRecorder.start();
         recLen = 0;
         handler.post(runnable);
-
+        Settings.System.putInt(getContentResolver(), "show_touches", 1);
     }
 
     private VirtualDisplay createRecorderVirtualDisplay() {
@@ -677,6 +678,7 @@ public class ScreenService extends Service implements OnClickListener,
                 stopScreenSharing();
                 normalButton();
                 handler.removeCallbacks(runnable);
+                Settings.System.putInt(getContentResolver(), "show_touches", 0);
                 Utils.showToast(this, "录屏结束");
                 ((MediaProjectionApplication) getApplication()).setInRecord(false);
                 break;

@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
-import permission.FloatWindowManager;
+import com.taoxu.permission.FloatWindowManager;
 
 /**
  * Created by tao.xu on 2016/01/28.
@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
 
     private void initData() {
-        // TODO Auto-generated method stub
         mMediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
         intent = ((MediaProjectionApplication) getApplication()).getIntent();
@@ -71,18 +70,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     FloatWindowManager.getInstance().applyPermission(this);
                 }
 
-//                if (Build.VERSION.SDK_INT >= 23 && !getAppOps(this)) {
-//                    AlertDialog dialog = new AlertDialog.Builder(this).setTitle("提示").setMessage("应用可能未获得悬浮窗权限，点击确定进入设置页面")
-//                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    Utils.getAppDetailSettingIntent(MainActivity.this);
-//                                }
-//                            }).setNegativeButton("取消", null).create();
-//                    dialog.show();
-//                } else {
-//                    start();
-//                }
                 break;
             case R.id.stop:
                 boolean flag = ((MediaProjectionApplication) getApplication())
@@ -156,7 +143,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             backHome.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             backHome.addCategory(Intent.CATEGORY_HOME);
             startActivity(backHome);
-
 
             return true;
         }

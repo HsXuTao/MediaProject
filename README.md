@@ -22,3 +22,6 @@ V1.1.0</br>
 新增悬浮窗权限的判定,非常感谢[https://github.com/zhaozepeng/FloatWindowPermission](https://github.com/zhaozepeng/FloatWindowPermission) 里面的对权限判定的内容。</br>
 已经增加了一个1像素的Activity来保活，若是加入到白名单之后还被清除，请提issue。。。</br> 
 更新悬浮窗滑动事件监听，使滑动更流畅平滑。</br> 
+新增录屏时候触摸屏幕的白色小圆点</br> 
+
+//需要添加设置界面，文件管理页面，最好再来个暂停（其实就是视屏录制的合成功能），视屏剪辑功能

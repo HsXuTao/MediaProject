@@ -45,7 +45,7 @@ public class Utils {
         SimpleDateFormat sDateFormat2 = new SimpleDateFormat(
                 "yyyy_MM_dd_HH_mm_ss");
         String date2 = sDateFormat2.format(new Date());
-        path = PICTURE_FOLDER_PATH + date.toString() + "/" + "Halo_"
+        path = PICTURE_FOLDER_PATH + date.toString() + "/" + "MediaProjection_"
                 + date2.toString() + ".png";
 
         return path;
@@ -193,4 +193,5 @@ public class Utils {
     public static MediaProjectionApplication getApplication(Service service) {
         return (MediaProjectionApplication) service.getApplication();
     }
+
 }
