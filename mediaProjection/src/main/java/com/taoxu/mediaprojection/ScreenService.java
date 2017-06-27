@@ -494,7 +494,14 @@ public class ScreenService extends Service implements OnClickListener,
     }
 
     AnimationRunnable animationRunnable;
-    int mRecycleTime = 1000;
+    /**
+     * 悬浮窗贴边动画持续时间，单位ms
+     */
+    int mAnimationTime = 500;
+
+    public void setmAnimationTime(int mAnimationTime) {
+        this.mAnimationTime = mAnimationTime;
+    }
 
     private class AnimationRunnable implements Runnable {
         private int time = 0;
@@ -503,7 +510,7 @@ public class ScreenService extends Service implements OnClickListener,
         @Override
         public void run() {
             // 防止一直循环浪费内存
-            if (time < mRecycleTime) {
+            if (time < mAnimationTime) {
                 if (mSideFloatLayout.getHandler() != null) {
                     mSideFloatLayout.getHandler().removeCallbacks(this);
                     mSideFloatLayout.getHandler().postDelayed(this, 16);
