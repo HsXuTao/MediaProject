@@ -197,12 +197,18 @@ public class ScreenService extends Service implements OnClickListener,
         mSideFloatLayoutParams.y = 0;
         mSideFloatLayoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         mSideFloatLayoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        mSideFloatLayoutParams.windowAnimations = android.R.style.Animation_Translucent;
         LayoutInflater inflater = LayoutInflater.from(getApplication());
         mSideFloatLayout = inflater.inflate(R.layout.side_float_layout, null);
         mSideWindowManager.addView(mSideFloatLayout, mSideFloatLayoutParams);
         mTouchSlop = ViewConfiguration.get(this).getScaledTouchSlop();
         initSideParams();
         initSideListener();
+        if (animationRunnable == null) {
+            animationRunnable = new AnimationRunnable();
+        } else {
+            animationRunnable.time = 0;
+        }
     }
 
     private void initSideListener() {
@@ -215,6 +221,7 @@ public class ScreenService extends Service implements OnClickListener,
         mScreenshot.setOnTouchListener(onTouchListener);
         mScreenrecord.setOnTouchListener(onTouchListener);
         mStoprecord.setOnTouchListener(onTouchListener);
+        mSideFloatLayout.setOnTouchListener(onTouchListener);
     }
 
     private void initSideParams() {
@@ -380,7 +387,7 @@ public class ScreenService extends Service implements OnClickListener,
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
 
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
         mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         // 此处调整视屏的捕捉率,数字越大,越清晰,当然视屏文件也越大
         mMediaRecorder.setVideoEncodingBitRate(1024 * 1024);
@@ -412,13 +419,14 @@ public class ScreenService extends Service implements OnClickListener,
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
+
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     inOneTouch = false;
                     x = event.getRawX();
                     y = event.getRawY();
                     mCurrentTime = System.currentTimeMillis();
-
+                    animationRunnable.stop();
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (inOneTouch) {
@@ -448,7 +456,7 @@ public class ScreenService extends Service implements OnClickListener,
                                 break;
                         }
                     }
-
+                    animationRunnable.stop();
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
@@ -485,23 +493,64 @@ public class ScreenService extends Service implements OnClickListener,
         settingFloatWindowPosition();
     }
 
+    AnimationRunnable animationRunnable;
+    int mRecycleTime = 1000;
+
+    private class AnimationRunnable implements Runnable {
+        private int time = 0;
+        private int end = 0;
+
+        @Override
+        public void run() {
+            // 防止一直循环浪费内存
+            if (time < mRecycleTime) {
+                if (mSideFloatLayout.getHandler() != null) {
+                    mSideFloatLayout.getHandler().removeCallbacks(this);
+                    mSideFloatLayout.getHandler().postDelayed(this, 16);
+                    mSideFloatLayoutParams.x = (int) (mSideFloatLayoutParams.x - time / 1000.0 * (mSideFloatLayoutParams.x - end));
+
+                    mSideWindowManager.updateViewLayout(mSideFloatLayout, mSideFloatLayoutParams);
+                }
+                time = time + 16;
+            } else {
+                return;
+            }
+        }
+
+        public void stop() {
+            time = 1000;
+        }
+
+        public void start(int endPoint) {
+            time = 0;
+            end = endPoint;
+            run();
+        }
+
+    }
+
     /**
      * 让悬浮窗位置始终在两侧
      */
     private void settingFloatWindowPosition() {
-        // Animation translateAnimation;
+//        // Animation translateAnimation;
         DisplayMetrics dm = new DisplayMetrics();
         dm = getResources().getDisplayMetrics();
         int screenWidth = dm.widthPixels;
         int screenHeight = dm.heightPixels;
-
+//
+//        if (mSideFloatLayoutParams.x < screenWidth / 2) {
+//            mSideFloatLayoutParams.x = 0;
+//        } else {
+//            mSideFloatLayoutParams.x = screenWidth;
+//        }
+//        mSideWindowManager.updateViewLayout(mSideFloatLayout,
+//                mSideFloatLayoutParams);
         if (mSideFloatLayoutParams.x < screenWidth / 2) {
-            mSideFloatLayoutParams.x = 0;
+            animationRunnable.start(0);
         } else {
-            mSideFloatLayoutParams.x = screenWidth;
+            animationRunnable.start(screenWidth);
         }
-        mSideWindowManager.updateViewLayout(mSideFloatLayout,
-                mSideFloatLayoutParams);
     }
 
     /**

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.WindowManager;
 
+import com.taoxu.mediaprojection.R;
 import com.taoxu.permission.rom.HuaweiUtils;
 import com.taoxu.permission.rom.MeizuUtils;
 import com.taoxu.permission.rom.MiuiUtils;
@@ -52,6 +53,12 @@ public class FloatWindowManager {
         return instance;
     }
 
+    /**
+     * 检查是否获得了悬浮窗权限
+     *
+     * @param context
+     * @return
+     */
     public boolean checkPermission(Context context) {
         //6.0 版本之后由于 google 增加了对悬浮窗权限的管理，所以方式就统一了
         if (Build.VERSION.SDK_INT < 23) {
@@ -103,6 +110,11 @@ public class FloatWindowManager {
         }
     }
 
+    /**
+     * 跳转到悬浮窗权限设置页面
+     *
+     * @param context
+     */
     public void applyPermission(Context context) {
         if (Build.VERSION.SDK_INT < 23) {
             if (RomUtils.checkIsMiuiRom()) {
@@ -177,7 +189,7 @@ public class FloatWindowManager {
         //这里也一样，魅族华为系统需要单独适配
         if (RomUtils.checkIsMeizuRom()) {
             meizuROMPermissionApply(context);
-        } else if(RomUtils.checkIsHuaweiRom()){
+        } else if (RomUtils.checkIsHuaweiRom()) {
             huaweiROMPermissionApply(context);
         } else {
             if (Build.VERSION.SDK_INT >= 23) {
@@ -214,7 +226,7 @@ public class FloatWindowManager {
         if (dialog != null && dialog.isShowing()) {
             dialog.dismiss();
         }
-        dialog = new AlertDialog.Builder(new ContextThemeWrapper(context, android.R.style.Theme_Dialog)).setCancelable(false).setTitle("")
+        dialog = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.AppTheme)).setCancelable(false).setTitle("")
                 .setMessage(message)
                 .setPositiveButton("现在去开启",
                         new DialogInterface.OnClickListener() {

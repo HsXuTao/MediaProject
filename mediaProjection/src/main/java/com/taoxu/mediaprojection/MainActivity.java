@@ -134,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         Log.e("onKeyDown","MainActivity----onKeyDown");
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
 
+            //启动1像素的Activity来保活
             Intent intent2 = new Intent(getApplicationContext(), ProtectActivity.class);
             intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent2);
